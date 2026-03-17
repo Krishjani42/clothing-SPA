@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="ecommerceApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krish. | Modern Fashion</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#b75b2b',     // Orange/Rust color used in theme
+                        dark: '#111111',
+                        grayLight: '#f6f6f6',
+                        grayText: '#666666'
+                    },
+                    fontFamily: {
+                        sans: ['"Jost"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <style>
+        /* Base styles & utilities */
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Jost', sans-serif; overflow-x: hidden; }
+        .heading-font { font-family: 'Playfair Display', serif; }
+        
+        /* Navigation underlines */
+        .nav-item { position: relative; }
+        .nav-item::after { 
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; 
+            background: black; transition: width 0.3s;
+        }
+        .nav-item:hover::after, .nav-item.active::after { width: 100%; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #888; }
+
+        /* Hovers and Animations */
+        .image-zoom { overflow: hidden; }
+        .image-zoom img { transition: transform 0.7s ease; }
+        .image-zoom:hover img { transform: scale(1.05); }
+
+        .product-action-btn { 
+            opacity: 0; 
+            transform: translateY(15px); 
+            transition: all 0.3s ease; 
+        }
+        .group:hover .product-action-btn { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+
+        /* Toast Animation */
+        .toast-enter { animation: slideIn 0.3s forwards; }
+        .toast-leave { animation: slideOut 0.3s forwards; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body ng-controller="MainController" class="text-gray-800">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-black text-white text-xs py-2 px-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span>Black Friday Sale is Live Now</span>
+        </div>
+        <div class="hidden md:block">Buy More & Save Up To 50% <a href="#" class="underline font-medium hover:text-primary transition">Shop Sale</a></div>
+        <div class="flex gap-4">
+            <select class="bg-black border-none text-white outline-none cursor-pointer text-xs" ng-model="currency">
+                <option value="USD">USD $</option>
+                <option value="EUR">EUR €</option>
+                <option value="GBP">GBP £</option>
+            </select>
+            <select class="bg-black border-none text-white outline-none cursor-pointer text-xs" ng-model="language">
+                <option value="English">English</option>
+                <option value="French">French</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100 transition-all duration-300">
+        <div class="container mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-2xl" ng-click="isMobileMenuOpen = !isMobileMenuOpen">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- Logo -->
+            <a href="#" class="text-3xl font-bold tracking-tighter">Krish<span class="text-primary">.</span></a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex gap-8 text-sm font-medium tracking-wide">
+                <a href="#home" class="nav-item active text-primary">HOME <i class="fa-solid fa-angle-down text-[10px] ml-1"></i></a>
+                <a href="#product" class="nav-item">PRODUCT <span class="bg-orange-100 text-primary text-[10px] px-1 ml-1 rounded">HOT</span></a>
+                <a href="#shop" class="nav-item">SHOP <i class="fa-solid fa-angle-down text-[10px] ml-1"></i></a>
+                <a href="#blog" class="nav-item">BLOG <i class="fa-solid fa-angle-down text-[10px] ml-1"></i></a>
+                <a href="#pages" class="nav-item">PAGES <i class="fa-solid fa-angle-down text-[10px] ml-1"></i></a>
+                <a href="#buy" class="nav-item text-primary font-bold">BUY KRISH</a>
+            </nav>
+
+            <!-- Icons -->
+            <div class="flex items-center gap-5 text-lg">
+                <button class="hover:text-primary transition hidden sm:block"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button class="hover:text-primary transition hidden sm:block">ACCOUNT</button>
+                <button class="hover:text-primary transition relative group">
+                    WISHLIST
+                    <span class="absolute -top-2 -right-3 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{{wishlistCount}}</span>
+                </button>
+                <button class="hover:text-primary transition relative group pl-2">
+                    BAG
+                    <span class="absolute -top-2 -right-3 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{{cartCount}}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div class="md:hidden bg-white border-t border-gray-100 absolute w-full left-0 z-40 transition-all duration-300" ng-show="isMobileMenuOpen">
+            <div class="flex flex-col px-4 py-4 gap-4 text-sm font-medium">
+                <a href="#home" class="text-primary">HOME</a>
+                <a href="#product">PRODUCT</a>
+                <a href="#shop">SHOP</a>
+                <a href="#blog">BLOG</a>
+                <a href="#pages">PAGES</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative bg-grayLight flex items-center overflow-hidden" style="min-height: 80vh;">
+        <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center relative z-10 w-full">
+            
+            <!-- Left Image (Decorative) -->
+            <div class="hidden lg:block w-1/4">
+                <img src="https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?auto=format&fit=crop&q=80&w=600" alt="Fashion Man Left" class="w-full object-cover object-top h-[600px] mt-20" style="object-position: center 20%; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%);">
+            </div>
+
+            <!-- Center Content -->
+            <div class="w-full lg:w-2/4 text-center px-4 py-16 md:py-0 z-20">
+                <h1 class="heading-font text-5xl md:text-6xl lg:text-7xl mb-6 leading-tight text-dark capitalize">
+                    Layer Up For Success<br>With Every Meeting
+                </h1>
+                <p class="text-grayText mb-10 max-w-lg mx-auto text-sm md:text-base leading-relaxed">
+                    Nunc ante convallis consectetur sociosqu rhoncus ultricies a egestas lectus aliquet maximus. Nunc torquent fringilla efficitur mauris.
+                </p>
+                <button class="bg-black text-white px-10 py-4 text-sm font-medium tracking-wide hover:bg-primary transition duration-300 inline-block uppercase shadow-lg shadow-black/20">
+                    View Collection
+                </button>
+            </div>
+
+            <!-- Right Image -->
+            <div class="w-full md:w-1/2 lg:w-1/4 flex justify-end absolute right-0 bottom-0 top-0">
+                <img src="https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?auto=format&fit=crop&q=80&w=800" alt="Fashion Man Right" class="h-full object-cover object-center w-full max-w-[500px]" style="mask-image: linear-gradient(to right, transparent, black 15%); -webkit-mask-image: linear-gradient(to right, transparent, black 15%);">
+            </div>
+        </div>
+        
+        <!-- Social Icons Left side -->
+        <div class="absolute left-6 bottom-10 flex flex-col gap-4 z-20 hidden md:flex">
+            <a href="#" class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-black hover:text-white transition shadow-sm"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-primary transition shadow-md relative">
+                <i class="fa-solid fa-comment-dots"></i>
+                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Banner -->
+    <section class="border-b border-gray-100 py-10 bg-white">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-4" ng-repeat="feature in features">
+                    <div class="mt-1 text-2xl text-dark">
+                        <i class="fa-solid {{feature.icon}}"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-sm mb-1 uppercase tracking-wide">{{feature.title}}</h4>
+                        <p class="text-xs text-grayText">{{feature.desc}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trends Section -->
+    <section class="py-24 bg-white" id="product">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="text-center mb-16">
+                <h2 class="heading-font text-4xl mb-6">Timeless & Classic Trends</h2>
+                <div class="flex flex-wrap justify-center gap-6 md:gap-10 text-sm font-medium tracking-wide">
+                    <button 
+                        ng-repeat="cat in trendCategories" 
+                        ng-click="setCategory(cat)"
+                        class="nav-item pb-1 transition-colors duration-300"
+                        ng-class="{'text-primary active': activeTrendCategory === cat, 'text-grayText': activeTrendCategory !== cat}"
+                    >
+                        {{cat}}
+                    </button>
+                </div>
+                <p class="text-xs text-grayText mt-8 max-w-xl mx-auto italic">Nam non nibh eget velit hendrerit fringilla. Donec dolor sit amet, consectetur adipiscing elit.</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Product Card -->
+                <div class="group cursor-pointer" ng-repeat="product in getTrendProducts()">
+                    <div class="relative bg-grayLight mb-5 image-zoom pt-6 px-4">
+                        <img ng-src="{{product.image}}" alt="{{product.name}}" class="w-full h-[320px] object-cover object-top mix-blend-multiply transition duration-500 group-hover:opacity-90">
+                        
+                        <!-- Badges -->
+                        <div class="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                            <span ng-if="product.isNew" class="bg-black text-white text-[10px] px-2 py-1 uppercase font-semibold">New</span>
+                            <span ng-if="product.discount" class="bg-primary text-white text-[10px] px-2 py-1 uppercase font-semibold">-{{product.discount}}%</span>
+                        </div>
+
+                        <!-- Hover Actions -->
+                        <div class="product-action-btn absolute bottom-4 left-0 w-full px-4 flex justify-between gap-2 z-20">
+                            <button class="bg-white hover:bg-primary hover:text-white w-full py-3 text-xs font-bold uppercase transition duration-300 shadow-lg" ng-click="addToCart(product)">Add to Cart</button>
+                            <button class="bg-white hover:bg-black hover:text-white w-12 flex-shrink-0 flex items-center justify-center transition duration-300 shadow-lg" ng-click="toggleWishlist(product)">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="flex justify-center text-primary text-[10px] gap-1 mb-2">
+                            <i class="fa-solid fa-star" ng-repeat="i in getStars(product.rating) track by $index"></i>
+                            <i class="fa-regular fa-star" ng-repeat="i in getEmptyStars(product.rating) track by $index"></i>
+                        </div>
+                        <h3 class="font-medium text-sm mb-1 hover:text-primary transition">{{product.name}}</h3>
+                        <div class="text-grayText text-sm">${{product.price.toFixed(2)}} <span ng-if="product.oldPrice" class="line-through text-xs ml-2">${{product.oldPrice.toFixed(2)}}</span></div>
+                        <div class="flex justify-center gap-1 mt-3">
+                            <span class="w-2.5 h-2.5 rounded-full bg-black cursor-pointer"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-gray-400 cursor-pointer"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary cursor-pointer"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-800 cursor-pointer"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promotional Section -->
+    <section class="bg-grayLight relative flex items-center overflow-hidden" id="shop">
+        <div class="container mx-auto px-4 md:px-8 py-20 flex flex-col md:flex-row items-center">
+            <div class="w-full md:w-1/2 z-10 pr-0 md:pr-10 mb-10 md:mb-0">
+                <h2 class="heading-font text-4xl md:text-5xl mb-4 text-dark mb-6">Act Fast! Incredible<br>Offers Expire Soon</h2>
+                <p class="text-grayText text-sm mb-10 max-w-md leading-relaxed">Nam curae augue diam ac curabitur nisi donec efficitur conubia fringilla ipsum viverra placerat.</p>
+                
+                <!-- Countdown -->
+                <div class="flex gap-4 md:gap-6 mb-10">
+                    <div class="text-center relative">
+                        <div class="text-3xl md:text-4xl heading-font">{{countdown.days}}</div>
+                        <div class="text-[10px] text-grayText uppercase mt-1">Days</div>
+                        <div class="absolute top-2 -right-4 md:-right-5 text-xl text-gray-400">:</div>
+                    </div>
+                    <div class="text-center relative">
+                        <div class="text-3xl md:text-4xl heading-font">{{countdown.hours | numberFixedLen:2}}</div>
+                        <div class="text-[10px] text-grayText uppercase mt-1">Hrs</div>
+                        <div class="absolute top-2 -right-4 md:-right-5 text-xl text-gray-400">:</div>
+                    </div>
+                    <div class="text-center relative">
+                        <div class="text-3xl md:text-4xl heading-font">{{countdown.minutes | numberFixedLen:2}}</div>
+                        <div class="text-[10px] text-grayText uppercase mt-1">Mins</div>
+                        <div class="absolute top-2 -right-4 md:-right-5 text-xl text-gray-400">:</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl md:text-4xl heading-font">{{countdown.seconds | numberFixedLen:2}}</div>
+                        <div class="text-[10px] text-grayText uppercase mt-1">Secs</div>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-grayText mb-8">Limited time offer. The deal will expires on December 18, 2025 HURRY UP! <a href="#" class="text-primary font-semibold underline">HURRY UP!</a></p>
+
+                <button class="bg-black text-white px-8 py-3 text-sm font-medium hover:bg-primary transition shadow-md">
+                    VIEW COLLECTION
+                </button>
+            </div>
+            
+            <div class="w-full md:w-1/2 flex justify-end relative h-[500px]">
+               <img src="https://images.pexels.com/photos/837140/pexels-photo-837140.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Promo Man" class="absolute bottom-0 right-0 h-[110%] w-auto object-cover object-top z-10" style="max-height: 600px;">
+               <!-- Background decorative circle -->
+               <div class="absolute top-1/4 right-20 w-80 h-80 bg-white rounded-full opacity-50 blur-3xl mix-blend-overlay"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Occasion Section -->
+    <section class="bg-black text-white relative py-6">
+        <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center justify-between">
+            <h2 class="text-2xl mb-4 md:mb-0">Occasion</h2>
+            <div class="heading-font text-3xl md:text-4xl flex items-center justify-center flex-1 gap-6 opacity-90">
+                <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&q=80&w=100&h=100" class="w-12 h-12 rounded-full object-cover border-2 border-gray-600 grayscale hidden sm:block" alt="thumb">
+                <span class="tracking-wide">Crafted For The Modern Man</span>
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100&h=100" class="w-12 h-12 rounded-full object-cover border-2 border-gray-600 grayscale hidden sm:block" alt="thumb">
+            </div>
+            <div class="text-gray-400 hidden md:block cursor-pointer hover:text-white transition">EXPLORE <i class="fa-solid fa-arrow-right ml-2 text-xs"></i></div>
+        </div>
+    </section>
+
+    <!-- Category Banner Cards -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Dream Fashion Card -->
+                <div class="relative h-[400px] group overflow-hidden bg-gray-900 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover object-center opacity-70 group-hover:scale-105 transition duration-700" alt="Dream Fashion bg">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-center justify-center p-8 z-10 hover:bg-black/40 transition duration-300">
+                        <h3 class="text-white text-2xl mb-8 tracking-wide">Dream Fashion</h3>
+                        <div class="w-32 h-40 bg-white p-2 shadow-2xl transform group-hover:-translate-y-2 transition duration-500">
+                            <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=300" class="w-full h-full object-cover" alt="Dream Look">
+                        </div>
+                        <div class="mt-8 flex gap-8 text-white/80 text-xs tracking-widest uppercase">
+                            <span class="hover:text-primary transition">VIEW MORE</span>
+                            <span class="hover:text-primary transition">SHOP NOW</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Winter Fashion Card -->
+                <div class="relative h-[400px] group overflow-hidden bg-gray-900 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1418065460487-3e41a6c8e1e4?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover opacity-70 group-hover:scale-105 transition duration-700" alt="Winter Fashion bg">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-center justify-center p-8 z-10 hover:bg-black/40 transition duration-300">
+                        <h3 class="text-white text-2xl mb-8 tracking-wide">Winter Fashion</h3>
+                        <div class="w-32 h-40 bg-white p-2 shadow-2xl transform group-hover:-translate-y-2 transition duration-500">
+                            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=300" class="w-full h-full object-cover" alt="Winter Look">
+                        </div>
+                        <div class="mt-8 flex gap-8 text-white/80 text-xs tracking-widest uppercase">
+                            <span class="hover:text-primary transition">VIEW MORE</span>
+                            <span class="hover:text-primary transition">SHOP NOW</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Browse Our Collections -->
+    <section class="py-16 bg-white" id="blog">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="text-center mb-12">
+                <h2 class="heading-font text-3xl mb-4">Browse Our Collections</h2>
+                <p class="text-xs text-grayText">Nam non nibh eget velit hendrerit fringilla. Donec dolor sit amet.</p>
+            </div>
+
+            <!-- Collection Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Product Card -->
+                <div class="group cursor-pointer" ng-repeat="product in getCollectionProducts()">
+                    <div class="relative bg-grayLight mb-5 image-zoom pt-6 px-4">
+                        <img ng-src="{{product.image}}" alt="{{product.name}}" class="w-full h-[320px] object-cover object-top mix-blend-multiply transition duration-500 group-hover:opacity-90">
+                        
+                        <!-- Hover Actions -->
+                        <div class="product-action-btn absolute bottom-4 left-0 w-full px-4 flex justify-between gap-2 z-20">
+                            <button class="bg-white hover:bg-primary hover:text-white w-full py-3 text-xs font-bold uppercase transition duration-300 shadow-lg" ng-click="addToCart(product)">Add to Cart</button>
+                            <button class="bg-white hover:bg-black hover:text-white w-12 flex-shrink-0 flex items-center justify-center transition duration-300 shadow-lg" ng-click="toggleWishlist(product)">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <h3 class="font-medium text-sm mb-1 hover:text-primary transition">{{product.name}}</h3>
+                        <div class="flex justify-center text-primary text-[10px] gap-1 mb-2">
+                            <i class="fa-solid fa-star" ng-repeat="i in getStars(product.rating) track by $index"></i>
+                            <i class="fa-regular fa-star" ng-repeat="i in getEmptyStars(product.rating) track by $index"></i>
+                        </div>
+                        <div class="text-grayText text-sm">${{product.price.toFixed(2)}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="bg-black text-white py-16">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-2xl mb-2 font-light">Join Our Newsletter For Access To</h2>
+                    <h2 class="text-2xl font-semibold">Exclusive Offers Today</h2>
+                </div>
+                <div class="w-full md:w-1/2 relative max-w-md">
+                    <form ng-submit="subscribe()" class="relative">
+                        <input type="email" placeholder="Enter Your Email Address" required ng-model="email"
+                            class="w-full bg-transparent border-b border-gray-600 pb-3 pl-2 pr-24 text-sm outline-none focus:border-white transition text-white placeholder-gray-500">
+                        <button type="submit" class="absolute right-0 bottom-3 text-xs uppercase font-bold tracking-wider hover:text-primary transition">
+                            SUBSCRIBE
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial Section -->
+    <section class="py-24 bg-white border-b border-gray-100 relative">
+        <div class="container mx-auto px-4 text-center max-w-3xl relative">
+            <h2 class="heading-font text-3xl mb-12">What Customers Say</h2>
+            
+            <div class="flex flex-col items-center">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150" alt="Customer" class="w-16 h-16 rounded-full object-cover mb-6 border-2 border-white shadow-md">
+                <h4 class="font-semibold text-lg mb-4">"Comfy Jogger For Every Occasion"</h4>
+                <div class="flex justify-center text-primary text-xs gap-1 mb-6">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-grayText text-sm italic mb-8 mx-auto leading-relaxed">
+                    "I love the quality of Krish clothes. Everything fits perfectly and feels premium. Definetly my go-to store for any outfit."
+                </p>
+                <div class="text-xs font-bold uppercase mb-2 text-dark mt-2">ALEXANDER M.</div>
+                <div class="text-xs text-gray-400">Verified Buyer</div>
+            </div>
+
+            <!-- Arrows -->
+            <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-black text-2xl transition hidden md:block"><i class="fa-solid fa-angle-left"></i></button>
+            <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-black text-2xl transition hidden md:block"><i class="fa-solid fa-angle-right"></i></button>
+        </div>
+    </section>
+
+    <!-- Instagram Feed -->
+    <section class="bg-[#fcf8f5] py-16" id="pages">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex flex-col md:flex-row items-center gap-8 md:gap-0">
+                <div class="w-full md:w-1/4 text-center md:text-left pr-0 md:pr-8">
+                    <h3 class="heading-font text-3xl mb-4">Join Us On Instagram</h3>
+                    <p class="text-xs text-grayText mb-6">Nam curae augue diam ac curabitur nisi donec efficitur conubia fringilla ipsum viverra placerat.</p>
+                    <a href="#" class="inline-block border-b-2 border-black pb-1 text-sm font-bold uppercase hover:text-primary hover:border-primary transition">@krish.fashion</a>
+                </div>
+                
+                <div class="w-full md:w-3/4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="#" class="block relative group overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=400" class="w-full h-48 object-cover group-hover:scale-110 transition duration-500" alt="Insta 1">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-300">
+                            <i class="fa-brands fa-instagram text-white text-2xl"></i>
+                        </div>
+                    </a>
+                    <a href="#" class="block relative group overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=400" class="w-full h-48 object-cover group-hover:scale-110 transition duration-500" alt="Insta 2">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-300">
+                            <i class="fa-brands fa-instagram text-white text-2xl"></i>
+                        </div>
+                    </a>
+                    <a href="#" class="block relative group overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=400" class="w-full h-48 object-cover group-hover:scale-110 transition duration-500" alt="Insta 3">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-300">
+                            <i class="fa-brands fa-instagram text-white text-2xl"></i>
+                        </div>
+                    </a>
+                    <a href="#" class="block relative group overflow-hidden">
+                        <img src="https://images.pexels.com/photos/1337477/pexels-photo-1337477.jpeg?auto=compress&cs=tinysrgb&w=400" class="w-full h-48 object-cover group-hover:scale-110 transition duration-500" alt="Insta 4">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-300">
+                            <i class="fa-brands fa-instagram text-white text-2xl"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brand Logos line -->
+    <div class="border-y border-gray-100 py-8 bg-white overflow-hidden">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center opacity-40 grayscale hover:grayscale-0 transition duration-500">
+                <span class="font-serif italic text-xl font-bold">Burberry</span>
+                <span class="font-sans font-bold tracking-[0.2em]">HERMES</span>
+                <span class="font-sans font-bold text-2xl tracking-tighter">DIOR</span>
+                <span class="font-serif text-xl tracking-widest">PRADA</span>
+                <span class="font-sans font-bold text-2xl">ZARA</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white pt-20 pb-10">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
+                <!-- Branding -->
+                <div class="lg:col-span-2">
+                    <a href="#" class="text-4xl font-bold tracking-tighter block mb-6">Krish<span class="text-primary">.</span></a>
+                    <p class="text-gray-400 text-sm mb-6 leading-relaxed max-w-sm">
+                        Suspendisse urna nibh, viverra non, semper suscipit, posuere a, pede. Donec nec justo eget felis facilisis fermentum.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <!-- Links 1 -->
+                <div>
+                    <h4 class="font-semibold text-sm mb-6 uppercase tracking-wider">About Krish</h4>
+                    <ul class="text-gray-400 text-sm flex flex-col gap-3">
+                        <li><a href="#" class="hover:text-primary transition">About Us</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Careers</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Terms of Service</a></li>
+                    </ul>
+                </div>
+
+                <!-- Links 2 -->
+                <div>
+                    <h4 class="font-semibold text-sm mb-6 uppercase tracking-wider">Categories</h4>
+                    <ul class="text-gray-400 text-sm flex flex-col gap-3">
+                        <li><a href="#" class="hover:text-primary transition">Men's Apparel</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Footwear</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Accessories</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Sale items</a></li>
+                    </ul>
+                </div>
+
+                <!-- Links 3 -->
+                <div>
+                    <h4 class="font-semibold text-sm mb-6 uppercase tracking-wider">Useful Links</h4>
+                    <ul class="text-gray-400 text-sm flex flex-col gap-3">
+                        <li><a href="#" class="hover:text-primary transition">Customer Service</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Track Order</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Returns & Exchanges</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Shipping Info</a></li>
+                        <li><a href="#" class="hover:text-primary transition">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-gray-500 text-xs">© 2025 Krish Fashion. All rights reserved.</p>
+                <!-- Payment methods -->
+                <div class="flex gap-2">
+                    <div class="bg-white/10 px-3 py-1 rounded text-lg text-white"><i class="fa-brands fa-cc-visa"></i></div>
+                    <div class="bg-white/10 px-3 py-1 rounded text-lg text-white"><i class="fa-brands fa-cc-mastercard"></i></div>
+                    <div class="bg-white/10 px-3 py-1 rounded text-lg text-white"><i class="fa-brands fa-cc-paypal"></i></div>
+                    <div class="bg-white/10 px-3 py-1 rounded text-lg text-white"><i class="fa-brands fa-cc-amex"></i></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div ng-show="isToastVisible" class="fixed bottom-10 right-10 bg-black text-white px-6 py-4 shadow-2xl z-50 flex items-center gap-4 rounded-sm transition-all duration-300" ng-class="{'toast-enter': isToastVisible, 'toast-leave': !isToastVisible}">
+        <div class="text-primary"><i class="fa-solid fa-circle-check text-xl"></i></div>
+        <div>
+            <h4 class="font-bold text-sm">Success</h4>
+            <p class="text-xs text-gray-300 mt-1">{{toastMessage}}</p>
+        </div>
+        <button class="ml-4 text-gray-400 hover:text-white" ng-click="isToastVisible = false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- AngularJS Application Logic -->
+    <script>
+        const app = angular.module('ecommerceApp', []);
+
+        // Custom filter to pad numbers with leading zeros for countdown
+        app.filter('numberFixedLen', function () {
+            return function (a, b) {
+                return (1e4 + a + "").slice(-b);
+            };
+        });
+
+        app.controller('MainController', ['$scope', '$interval', '$timeout', function($scope, $interval, $timeout) {
+            
+            // State
+            $scope.currency = 'USD';
+            $scope.language = 'English';
+            $scope.cartCount = 0;
+            $scope.wishlistCount = 0;
+            $scope.isMobileMenuOpen = false;
+
+            // Header Interaction data
+            $scope.trendCategories = ['Casual Wear', 'Loungewear', 'Active Wear'];
+            $scope.activeTrendCategory = 'Casual Wear';
+
+            $scope.setCategory = function(cat) {
+                $scope.activeTrendCategory = cat;
+            };
+
+            // Products list
+            $scope.products = [
+                // Trend Section
+                { id: 1, name: 'Sleeveless Jacket', price: 17.00, oldPrice: 24.00, rating: 4, image: 'https://images.pexels.com/photos/298864/pexels-photo-298864.jpeg?auto=compress&cs=tinysrgb&w=600', isNew: false, discount: 20 },
+                { id: 2, name: 'Lightweight Jacket', price: 27.00, rating: 4, image: 'https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&q=80&w=600', isNew: true, discount: null },
+                { id: 3, name: 'Casual Solid Jacket', price: 19.00, rating: 4, image: 'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?auto=format&fit=crop&q=80&w=600', isNew: false, discount: null },
+                { id: 4, name: 'Male Checked Shirt', price: 27.00, oldPrice: 35.00, rating: 4, image: 'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=600', isNew: false, discount: 15 },
+                
+                // Collection Section
+                { id: 5, name: 'Vintage Denim Jacket', price: 35.00, rating: 5, image: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&q=80&w=600' },
+                { id: 6, name: 'Regular Fit Striped Shirt', price: 22.00, rating: 4, image: 'https://images.pexels.com/photos/837140/pexels-photo-837140.jpeg?auto=compress&cs=tinysrgb&w=600' },
+                { id: 7, name: 'Oversize T-Shirt', price: 15.00, rating: 5, image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=600' },
+                { id: 8, name: 'Striped Polo T-Shirt', price: 18.00, rating: 3, image: 'https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=600' }
+            ];
+
+            $scope.getTrendProducts = function() {
+                return $scope.products.slice(0, 4);
+            };
+
+            $scope.getCollectionProducts = function() {
+                return $scope.products.slice(4, 8);
+            };
+
+            // Actions
+            $scope.addToCart = function(product) {
+                $scope.cartCount++;
+                $scope.showToast(product.name + ' was added to your bag!');
+            };
+
+            $scope.toggleWishlist = function(product) {
+                $scope.wishlistCount++;
+                $scope.showToast(product.name + ' was added to wishlist!');
+            };
+
+            // Features Data
+            $scope.features = [
+                { icon: 'fa-shield-halved', title: 'Safe Transaction', desc: 'Secure payment gateway' },
+                { icon: 'fa-box-open', title: 'Secure Delivery', desc: 'Protected shipping via global partners' },
+                { icon: 'fa-headset', title: 'Exclusive Help', desc: '24/7 online friendly support' },
+                { icon: 'fa-tag', title: 'Affordable Price', desc: 'Best price guarantee and deals' }
+            ];
+
+            // Countdown Logic
+            $scope.countdown = { days: 210, hours: 3, minutes: 43, seconds: 43 };
+            
+            $interval(function() {
+                if ($scope.countdown.seconds > 0) {
+                    $scope.countdown.seconds--;
+                } else {
+                    $scope.countdown.seconds = 59;
+                    if ($scope.countdown.minutes > 0) {
+                        $scope.countdown.minutes--;
+                    } else {
+                        $scope.countdown.minutes = 59;
+                        if ($scope.countdown.hours > 0) {
+                            $scope.countdown.hours--;
+                        } else {
+                            $scope.countdown.hours = 23;
+                            if ($scope.countdown.days > 0) {
+                                $scope.countdown.days--;
+                            }
+                        }
+                    }
+                }
+            }, 1000);
+
+            // Toast settings
+            $scope.toastMessage = '';
+            $scope.isToastVisible = false;
+            let toastTimer;
+
+            $scope.showToast = function(msg) {
+                if(toastTimer) $timeout.cancel(toastTimer);
+                
+                $scope.toastMessage = msg;
+                $scope.isToastVisible = true;
+                
+                toastTimer = $timeout(function() {
+                    $scope.isToastVisible = false;
+                }, 4000);
+            };
+
+            // Newsletter
+            $scope.email = '';
+            $scope.subscribe = function() {
+                if($scope.email) {
+                    $scope.showToast('Successfully subscribed with ' + $scope.email);
+                    $scope.email = '';
+                }
+            };
+            
+            // Helpers
+            $scope.getStars = function(rating) {
+                return new Array(rating || 0);
+            };
+            $scope.getEmptyStars = function(rating) {
+                return new Array(5 - (rating || 0));
+            };
+        }]);
+    </script>
+</body>
+</html>
